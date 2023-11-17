@@ -54,6 +54,7 @@ class MainActivity : ComponentActivity() {
         auth = Firebase.auth
         database = Firebase.database("https://lab04did-default-rtdb.europe-west1.firebasedatabase.app/").reference
 
+
         setContent {
             Lab4ComposeTheme {
                 // A surface container using the 'background' color from the theme
@@ -80,10 +81,15 @@ fun WriteInDatabase( modifier: Modifier = Modifier, databaseReference: DatabaseR
     databaseReference.child("Stringa").setValue("Hello, World!")
 }
 
-fun writeNewUser(userId: String, name: String, email: String) {
+fun writeNewUser(userId: String, name: String, email: String): Boolean {
     val user = User(name, email)
+    var uploaded = false
 
-    database.child("users").child(userId).setValue(user)
+    database.child("users").child("user1").setValue(user).addOnSuccessListener { uploaded = true }
+    database.child("users").child("user1").child("userId").setValue(userId)
+
+   return uploaded
+
 }
 
 @Composable
@@ -129,7 +135,18 @@ fun AuthenticationScreen(auth: FirebaseAuth) {
             WriteInDatabase(databaseReference = database)
             // ReadFromDatabase(databaseReference = database)
             val uid = auth.currentUser?.uid ?: "Null"
-            writeNewUser(uid,"Maurizio","maurizio.costanzo@gmail.com")
+            if (writeNewUser(uid,"Maurizio","maurizio.costanzo@gmail.com")){
+                Box(modifier = Modifier
+                    .padding(bottom = 50.dp)){
+                    Text("Data of the user is uploaded on the database")
+                }
+            } else {
+                Box(modifier = Modifier
+                    .padding(bottom = 50.dp)){
+                    Text("Data of the user is non uploaded on the database")
+                }
+
+            }
         } else {
             // User is not signed in, you can show a loading indicator or a login button
             Text("Signing in...")
@@ -164,7 +181,7 @@ fun ReadDataScreen(databaseReference: DatabaseReference) {
         contentAlignment = Alignment.Center
     ) {
         // Display the read data
-        Text(data)
+        //Text(data)
     }
 }
 
